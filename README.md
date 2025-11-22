@@ -4,18 +4,19 @@ An AI-powered video editing tool that automatically analyzes long-form videos, e
 
 ## Features
 
-- 🎥 **AI Video Analysis** - Uses Google Gemini 1.5 Pro to analyze video content
+- 🎥 **AI Video Analysis** - Uses Google Gemini Flash to analyze video content
 - ✂️ **Automatic Highlight Extraction** - Identifies 3-5 most engaging moments
 - 🎬 **Video Processing** - Cuts and stitches clips using FFmpeg
 - 🚀 **Modern Web Interface** - Built with Next.js and React
 - 🐳 **Docker Support** - Easy deployment with Docker Compose
 
-## Architecture
+## Architecture: The Developer Agents
 
-- **Frontend**: Next.js (React) + Tailwind CSS
-- **Backend**: FastAPI (Python)
-- **AI Engine**: Google Gemini 1.5 Pro
-- **Video Processing**: FFmpeg
+This project is built around the concept of specialized "Developer Agents":
+
+- **Agent Qazi (Analysis)**: Uses Gemini AI to watch the video and identify viral highlights.
+- **Agent Trond (Processing)**: Uses FFmpeg to physically cut and stitch the video segments.
+- **Agent Hans (Frontend)**: Ensures the React frontend is healthy and connected.
 
 ## Prerequisites
 
@@ -51,14 +52,18 @@ An AI-powered video editing tool that automatically analyzes long-form videos, e
 1. Open http://localhost:3000 in your browser
 2. Upload a video file (drag & drop or click to browse)
 3. Click "Start Processing"
-4. Wait for the AI to analyze and process your video
+4. Wait for the agents to collaborate:
+   - **Qazi** will analyze the content.
+   - **Trond** will cut the video.
 5. Download the generated highlight reel
 
 ## API Endpoints
 
 - `GET /` - Health check
 - `POST /upload` - Upload a video file
-- `POST /process/{file_id}` - Start processing a video
+- `POST /process/{file_id}` - Start full processing pipeline
+- `POST /agent/qazi/{file_id}` - Invoke Agent Qazi (Analysis only)
+- `POST /agent/trond/{job_id}` - Invoke Agent Trond (Processing only)
 - `GET /jobs/{job_id}` - Check job status
 - `GET /static/{filename}` - Download processed video
 
@@ -80,14 +85,9 @@ npm run dev
 
 ## Pricing
 
-Uses Google Gemini 1.5 Pro with generous free tier:
-- 15 requests per minute
-- 1 million tokens per minute
-- 1,500 requests per day
-
-Estimated cost per video:
-- 10-minute video: ~$0.03
-- 1-hour video: ~$0.13
+Uses Google Gemini Flash (High speed, low cost):
+- Extremely cost-effective for video analysis.
+- Generous free tier available.
 
 ## License
 

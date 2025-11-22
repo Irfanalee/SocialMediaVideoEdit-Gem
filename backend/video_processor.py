@@ -14,13 +14,13 @@ class VideoProcessor:
             (
                 ffmpeg
                 .input(input_path, ss=start_time, to=end_time)
-                .output(output_path, c='libx264', preset='fast', crf=23, acodec='aac') # Re-encode for safety
+                .output(output_path, vcodec='libx264', preset='fast', crf=23, acodec='aac') # Re-encode for safety
                 .overwrite_output()
                 .run(quiet=True)
             )
             return True
         except ffmpeg.Error as e:
-            print(f"Error cutting video: {e}")
+            print(f"Error cutting video: {e.stderr.decode('utf8') if e.stderr else str(e)}")
             return False
 
     def concatenate_videos(self, video_paths: list, output_path: str):
@@ -45,7 +45,7 @@ class VideoProcessor:
                 (
                     ffmpeg
                     .concat(*inputs)
-                    .output(output_path, c='libx264', preset='fast')
+                    .output(output_path, vcodec='libx264', preset='fast')
                     .overwrite_output()
                     .run(quiet=True)
                 )

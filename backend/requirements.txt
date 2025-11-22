@@ -4,3 +4,4 @@ python-multipart
 ffmpeg-python
 google-generativeai
 python-dotenv
+websockets

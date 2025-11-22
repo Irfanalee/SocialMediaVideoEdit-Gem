@@ -12,7 +12,7 @@ if GEMINI_API_KEY:
 
 class AIEngine:
     def __init__(self):
-        self.model = genai.GenerativeModel('gemini-1.5-pro-latest')
+        self.model = genai.GenerativeModel('gemini-flash-latest')
 
     def upload_file(self, path: str):
         print(f"Uploading file: {path}")
