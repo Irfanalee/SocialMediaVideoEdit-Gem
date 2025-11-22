@@ -128,6 +128,47 @@ async def list_videos():
     
     return {"videos": videos}
 
+@app.get("/processed")
+async def list_processed_videos():
+    """List all processed videos"""
+    videos = []
+    
+    if not os.path.exists("processed"):
+        return {"videos": []}
+    
+    for filename in os.listdir("processed"):
+        if filename.startswith('.'):
+            continue
+            
+        file_path = f"processed/{filename}"
+        stats = os.stat(file_path)
+        
+        videos.append({
+            "filename": filename,
+            "path": f"/static/{filename}",
+            "size_mb": round(stats.st_size / (1024 * 1024), 2),
+            "created_at": datetime.fromtimestamp(stats.st_ctime).isoformat()
+        })
+    
+    # Sort by creation time (newest first)
+    videos.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    return {"videos": videos}
+
+@app.delete("/processed/{filename}")
+async def delete_processed_video(filename: str):
+    """Delete a processed video"""
+    file_path = f"processed/{filename}"
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Video not found")
+        
+    try:
+        os.remove(file_path)
+        return {"message": "Video deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/videos/{file_id}/metadata")
 async def get_video_metadata(file_id: str):
     """Get detailed metadata for a specific video"""
