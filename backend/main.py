@@ -5,6 +5,7 @@ import json
 import asyncio
 from datetime import datetime
 from typing import Dict, List
+from pydantic import BaseModel
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -27,6 +28,7 @@ app.add_middleware(
 os.makedirs("uploads", exist_ok=True)
 os.makedirs("processed", exist_ok=True)
 app.mount("/static", StaticFiles(directory="processed"), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 ai_engine = AIEngine()
 video_processor = VideoProcessor()
@@ -179,6 +181,7 @@ async def get_video_metadata(file_id: str):
     file_path = f"uploads/{files[0]}"
     metadata = metadata_extractor.extract_metadata(file_path)
     metadata['file_id'] = file_id
+    metadata['path'] = file_path
     
     return metadata
 
@@ -332,6 +335,44 @@ async def start_processing(file_id: str, background_tasks: BackgroundTasks):
     }
     
     background_tasks.add_task(process_video_task, job_id, file_path)
+    
+    return jobs[job_id]
+
+class Clip(BaseModel):
+    start: float
+    end: float
+    description: str = "Manual clip"
+
+class ManualProcessRequest(BaseModel):
+    clips: List[Clip]
+
+@app.post("/process/manual/{file_id}")
+async def start_manual_processing(file_id: str, request: ManualProcessRequest, background_tasks: BackgroundTasks):
+    """Start manual processing with user-defined clips"""
+    files = [f for f in os.listdir("uploads") if f.startswith(file_id)]
+    if not files:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    file_path = f"uploads/{files[0]}"
+    job_id = str(uuid.uuid4())
+    
+    # Convert Pydantic models to dicts
+    highlights = [clip.dict() for clip in request.clips]
+    
+    jobs[job_id] = {
+        "id": job_id,
+        "file_id": file_id,
+        "status": "queued",
+        "highlights": highlights,
+        "timeline": [{
+            "event": "Manual Clips Received",
+            "status": "completed",
+            "timestamp": datetime.now().isoformat()
+        }]
+    }
+    
+    # Skip analysis, go straight to processing
+    background_tasks.add_task(run_processing_agent, job_id, file_path)
     
     return jobs[job_id]
 
